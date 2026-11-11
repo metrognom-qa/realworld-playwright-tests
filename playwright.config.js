@@ -22,10 +22,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* 4 tests at a time. Safe with one shared test account: tests search all pages
+     of article lists and wait for fresh list data (see pages/ArticlePreview.js). */
+  workers: 4,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  /* html — the built-in Playwright report; allure-playwright writes results to allure-results/ */
+  reporter: [['html'], ['allure-playwright']],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -36,43 +38,37 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  /* Configure projects for major browsers */
+  /* Target platforms. Run one with --project, e.g. --project=windows-chrome */
   projects: [
+    /* Windows: real Google Chrome installed on the machine */
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'windows-chrome',
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     },
-/*
+    /* Windows: Playwright's Firefox build */
     {
-      name: 'firefox',
+      name: 'windows-firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-
+    /* Mac Safari: Playwright's WebKit (Safari's engine) with Desktop Safari settings.
+       Not the real Safari app; it runs on any OS. */
     {
-      name: 'webkit',
+      name: 'mac-safari',
       use: { ...devices['Desktop Safari'] },
     },
-*/
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    /* iPhone 17 Safari: emulated (WebKit, iPhone screen, touch, mobile user agent).
+       iPhone 17 is the best-selling iPhone in 2026. */
+    {
+      name: 'iphone-17-safari',
+      use: { ...devices['iPhone 17'] },
+    },
+    /* Android Chrome on Samsung Galaxy: emulated (Chromium, phone screen, touch, mobile user agent).
+       Samsung is the leading Android brand in North America; Galaxy S24 is the newest
+       Samsung device built into Playwright (Galaxy S26 Ultra is not available). */
+    {
+      name: 'android-galaxy-s24-chrome',
+      use: { ...devices['Galaxy S24'] },
+    },
   ],
 
   /* Run your local dev server before starting the tests */

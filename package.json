@@ -4,16 +4,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test",
-    "code": "npx playwright codegen"
+    "test": "playwright test --grep-invert @a11y",
+    "test:a11y": "playwright test --grep @a11y",
+    "test:all": "playwright test",
+    "code": "npx playwright codegen",
+    "allure:clean": "node -e \"require('fs').rmSync('allure-results', { recursive: true, force: true })\"",
+    "test:allure": "npm run allure:clean && allure run -- playwright test --grep-invert @a11y",
+    "test:a11y:allure": "npm run allure:clean && allure run -- playwright test --grep @a11y",
+    "allure:open": "allure open allure-report"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.4.1",
+    "allure": "3.22.1",
+    "allure-playwright": "3.14.0",
     "dotenv": "^18.0.8"
   },
   "dependencies": {

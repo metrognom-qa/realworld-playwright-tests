@@ -9,6 +9,7 @@ Automated UI tests for https://realworld.qa.guru/ using Playwright and JavaScrip
 - Faker
 - dotenv
 - Page Object Model
+- Allure Report
 
 ## Test Scenario
 
@@ -61,11 +62,30 @@ Automated UI tests for https://realworld.qa.guru/ using Playwright and JavaScrip
 
 ## Run the Test
 
-Run in Chromium with a visible browser:
+Tests run on five platforms (projects in `playwright.config.js`):
+
+| Project | Browser | Notes |
+|---|---|---|
+| `windows-chrome` | Google Chrome | real Chrome installed on the machine |
+| `windows-firefox` | Firefox | Playwright's Firefox build |
+| `mac-safari` | WebKit (Safari engine) | Desktop Safari settings; not the real Safari app |
+| `iphone-17-safari` | WebKit (Safari engine) | emulated iPhone 17: screen, touch, mobile user agent |
+| `android-galaxy-s24-chrome` | Chromium | emulated Samsung Galaxy S24: screen, touch, mobile user agent |
+
+Run the functional tests on all platforms:
 
 ```bash
-npx playwright test tests/create-article.spec.js --project=chromium --headed
+npm test
 ```
+
+Run on one platform, for example Chrome with a visible browser:
+
+```bash
+npx playwright test --project=windows-chrome --headed
+```
+
+Mobile and Safari projects are emulated: they use Playwright's WebKit/Chromium builds with the
+device's screen size, touch, and user agent, not real devices or the real Safari app.
 
 ## View the HTML Report
 
@@ -74,6 +94,52 @@ npx playwright show-report
 ```
 
 Keep the report server running while viewing the report.
+
+## Allure Report
+
+Run the functional tests and generate the Allure report (old results are removed first);
+for the accessibility checks use `npm run test:a11y:allure`:
+
+```bash
+npm run test:allure
+```
+
+Pass Playwright options after `--`, for example:
+
+```bash
+npm run test:allure -- --project=windows-chrome
+```
+
+Open the generated report in the browser:
+
+```bash
+npm run allure:open
+```
+
+Keep the report server running while viewing the report; press `Ctrl+C` to stop it.
+
+## Accessibility Checks
+
+`tests/accessibility.spec.js` checks the key pages against WCAG 2.2 levels A and AA using axe-core
+(`@axe-core/playwright`): Home, Login, New Article editor, Article page with a comment, and Profile.
+
+The checks are soft: each test runs to the end, all violations are added to the report, and the test
+is marked failed if any violations were found. For each page the report contains:
+
+- the soft assertion message with one line per violation: impact, rule, WCAG criterion, and the number of elements;
+- the `Accessibility: <page>` attachment with a readable description of each violation:
+  why it matters, a link to more information, and for each element its selector, HTML, and how to fix it;
+- the `Accessibility (JSON): <page>` attachment with the full axe-core results.
+
+The accessibility tests are tagged `@a11y` and run separately from the functional tests:
+
+| Command | What it runs |
+|---|---|
+| `npm test` | functional tests only (without `@a11y`) |
+| `npm run test:a11y` | accessibility checks only |
+| `npm run test:all` | everything |
+| `npm run test:allure` | functional tests + Allure report |
+| `npm run test:a11y:allure` | accessibility checks + Allure report |
 
 ## Current Limitations
 
