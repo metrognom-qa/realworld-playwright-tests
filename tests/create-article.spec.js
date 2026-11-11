@@ -51,7 +51,7 @@ test('Create article and verify it in profile and Global Feed', async ({
   ).toBeVisible();
 
   // Go to profile and verify article is in My Articles
-  await profilePage.open('Emily Parker');
+  await profilePage.open(process.env.TEST_USERNAME);
   await profilePage.myArticlesTab.click();
 
   // Verify each field of the My Articles preview exactly matches the data entered at creation

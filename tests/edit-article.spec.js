@@ -16,7 +16,7 @@ test('Edit article title and body and verify the changes persist', async ({
 }) => {
 
   // Go to profile and find article is in My Articles
-  await profilePage.open('Emily Parker');
+  await profilePage.open(process.env.TEST_USERNAME);
   await profilePage.myArticlesTab.click();
   const createdArticleLink = await profilePage.getArticleByTitle(article.title);
   await expect(createdArticleLink).toBeVisible();
@@ -54,7 +54,7 @@ await page
 await expect(articleDetailsPage.title).toHaveText(editedArticle.title);
 
 // Open the current user's profile through the navigation menu
-await profilePage.openFromNavigation('Emily Parker');
+await profilePage.openFromNavigation(process.env.TEST_USERNAME);
 
 await profilePage.myArticlesTab.click();
 

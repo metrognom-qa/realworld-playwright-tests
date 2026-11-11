@@ -47,7 +47,7 @@ test.describe('Accessibility (WCAG 2.2 AA)', { tag: '@a11y' }, () => {
     profilePage,
     checkAccessibility,
   }) => {
-    await profilePage.open('Emily Parker');
+    await profilePage.open(process.env.TEST_USERNAME);
     await expect(profilePage.myArticlesTab).toBeVisible();
     await checkAccessibility('Profile page');
   });

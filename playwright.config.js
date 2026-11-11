@@ -3,6 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 /*import { trace } from 'node:console';*/
 import 'dotenv/config';
 
+/* Test account settings from .env (see README → Setup) */
+const missingEnv = ['TEST_EMAIL', 'TEST_PASSWORD', 'TEST_USERNAME'].filter(
+  (name) => !process.env[name],
+);
+if (missingEnv.length > 0) {
+  throw new Error(`Missing in .env: ${missingEnv.join(', ')}. See README → Setup.`);
+}
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv

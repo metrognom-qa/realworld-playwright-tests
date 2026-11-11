@@ -13,7 +13,7 @@ test('Like article in My Articles and verify it in Favorited Articles', async ({
   profilePage,
 }) => {
   // Go to profile and open My Articles
-  await profilePage.open('Emily Parker');
+  await profilePage.open(process.env.TEST_USERNAME);
   await profilePage.myArticlesTab.click();
 
   // Verify the article is not liked yet

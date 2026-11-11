@@ -14,7 +14,7 @@ test('Add comment to article and verify it is saved', async ({
   profilePage,
   articleDetailsPage,
 }) => {
-  const username = 'Emily Parker';
+  const username = process.env.TEST_USERNAME;
   const commentText = faker.lorem.sentence();
 
   // Today's date in the site format, e.g. "November 11, 2026"

@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { ArticlePreview, findArticlePreview, loadArticlesList } from './ArticlePreview';
 
 export class HomePage {
@@ -9,8 +10,19 @@ export class HomePage {
     });
   }
 
+  // For a logged-in user the home page first loads "Your Feed".
+  // Wait until it is loaded and shown; otherwise its late response can replace
+  // the Global Feed list that the test opens right after.
   async open() {
-    await this.homeLink.click();
+    await Promise.all([
+      this.page.waitForResponse((res) => res.url().includes('/api/articles/feed?')),
+      this.homeLink.click(),
+    ]);
+    await expect(
+      this.page
+        .getByText('Articles not available.')
+        .or(this.page.locator('.article-preview').getByRole('heading').first()),
+    ).toBeVisible();
   }
 
   async openGlobalFeed() {

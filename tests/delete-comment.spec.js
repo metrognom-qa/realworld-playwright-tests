@@ -15,7 +15,7 @@ test('Delete second comment and verify the first and third remain unchanged', as
   publishedArticle,
   articleDetailsPage,
 }) => {
-  const username = 'Emily Parker';
+  const username = process.env.TEST_USERNAME;
 
   // Today's date in the site format, e.g. "November 11, 2026"
   const today = new Date().toLocaleDateString('en-US', {
