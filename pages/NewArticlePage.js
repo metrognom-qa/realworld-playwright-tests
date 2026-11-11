@@ -16,8 +16,9 @@ export class NewArticlePage {
     await this.titleInput.fill(title);
     await this.descriptionInput.fill(description);
     await this.bodyInput.fill(body);
+    // Do not press Enter in the tags field: on this site Enter submits the whole form,
+    // which races with the Publish click. The typed tag is saved on Publish.
     await this.tagsInput.fill(tag);
-    await this.tagsInput.press('Enter');
     await this.publishButton.click();
   }
 }

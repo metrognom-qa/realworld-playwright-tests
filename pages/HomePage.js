@@ -1,3 +1,5 @@
+import { ArticlePreview, findArticlePreview, loadArticlesList } from './ArticlePreview';
+
 export class HomePage {
   constructor(page) {
     this.page = page;
@@ -12,7 +14,7 @@ export class HomePage {
   }
 
   async openGlobalFeed() {
-    await this.globalFeedButton.click();
+    await loadArticlesList(this.page, () => this.globalFeedButton.click());
   }
 
   getArticleByTitle(title) {
@@ -20,6 +22,15 @@ export class HomePage {
       name: title,
       exact: true,
     });
+  }
+
+  getArticlePreview(title) {
+    return new ArticlePreview(this.page, title);
+  }
+
+  // Searches all pages of the current feed
+  async findArticlePreview(title) {
+    return findArticlePreview(this.page, title);
   }
 
   async openArticle(title) {
