@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
 /*import { trace } from 'node:console';*/
+import 'dotenv/config';
 
 /**
  * Read environment variables from file.

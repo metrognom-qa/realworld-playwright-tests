@@ -23,7 +23,10 @@ test('Create article and verify it in profile and Global Feed', async ({ page })
 
   // Login
   await loginPage.open();
-  await loginPage.login('YOUR_TEST_EMAIL', 'YOUR_TEST_PASSWORD');
+  await loginPage.login(
+  process.env.TEST_EMAIL,
+  process.env.TEST_PASSWORD
+);
 
   // Generate randomized article data using Faker for each test run
   const article = {

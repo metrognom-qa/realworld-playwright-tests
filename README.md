@@ -7,6 +7,7 @@ Automated UI tests for https://realworld.qa.guru/ using Playwright and JavaScrip
 - Playwright
 - JavaScript
 - Faker
+- dotenv
 - Page Object Model
 
 ## Test Scenario
@@ -27,6 +28,7 @@ Automated UI tests for https://realworld.qa.guru/ using Playwright and JavaScrip
 - `pages/` — page objects containing locators and actions.
 - `tests/` — test scenarios and assertions.
 - `playwright.config.js` — Playwright configuration.
+- `.env` — local test account credentials; excluded from Git.
 
 ## Setup
 
@@ -35,18 +37,27 @@ Automated UI tests for https://realworld.qa.guru/ using Playwright and JavaScrip
 3. Open a terminal in the project directory.
 4. Install dependencies:
 
-```bash
-npm ci
-```
+   ```bash
+   npm ci
+   ```
 
 5. Install Playwright browsers:
 
-```bash
-npx playwright install
-```
+   ```bash
+   npx playwright install
+   ```
 
 6. Register a dedicated test account at https://realworld.qa.guru/.
-7. In `tests/create-article.spec.js`, replace the credentials passed to `loginPage.login()` with your test account credentials. Do not commit passwords.
+7. Create a `.env` file in the project root, next to `package.json`.
+8. Add your test account credentials:
+
+   ```env
+   TEST_EMAIL=your_test_email
+   TEST_PASSWORD="your_test_password"
+   ```
+
+   Replace the placeholder values with your registered test account credentials.
+   Do not commit the `.env` file.
 
 ## Run the Test
 
@@ -56,8 +67,15 @@ Run in Chromium with a visible browser:
 npx playwright test tests/create-article.spec.js --project=chromium --headed
 ```
 
+## View the HTML Report
+
+```bash
+npx playwright show-report
+```
+
+Keep the report server running while viewing the report.
 
 ## Current Limitations
 
-- Test credentials are currently configured directly in the test file.
 - The created article is not deleted after the test.
+- On the shared website, new articles from other users may move the test article to another page in Global Feed.
