@@ -18,46 +18,50 @@ export class ArticlePreview {
   }
 }
 
-function firstArticleTitle(page) {
-  return page.locator('.article-preview').getByRole('heading').first();
-}
-
-// Run an action that loads an article list (open a profile, tab, feed, or next page),
-// wait for the list API response, and wait until the page shows that fresh response.
-// Without this, the test can read the previous (stale) list that is still on screen.
-export async function loadArticlesList(page, action) {
-  const [response] = await Promise.all([
-    page.waitForResponse(
-      (res) => res.request().method() === 'GET' && res.url().includes('/api/articles?'),
-    ),
-    action(),
-  ]);
-  const { articles } = await response.json();
-  if (articles.length > 0) {
-    await expect(firstArticleTitle(page)).toHaveText(articles[0].title);
+export class ArticlesList {
+  constructor(page) {
+    this.page = page;
+    this.firstArticleTitle = page.locator('.article-preview').getByRole('heading').first();
+    this.nextPageButton = page
+      .getByRole('navigation', { name: 'Pagination' })
+      .getByRole('button', { name: 'Next page' });
   }
-}
 
-// Find an article preview in the current list, moving through pagination pages
-// until the article is found. Throws if the article is not on any page.
-export async function findArticlePreview(page, title) {
-  const preview = new ArticlePreview(page, title);
-  const pagination = page.getByRole('navigation', { name: 'Pagination' });
-  const nextPageButton = pagination.getByRole('button', { name: 'Next page' });
-
-  for (let pageNumber = 1; ; pageNumber++) {
-    await firstArticleTitle(page).waitFor();
-
-    if (await preview.root.isVisible()) {
-      return preview;
+  // Run an action that loads an article list (open a profile, tab, feed, or next page),
+  // wait for the list API response, and wait until the page shows that fresh response.
+  // Without this, the test can read the previous (stale) list that is still on screen.
+  async load(action) {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        (res) => res.request().method() === 'GET' && res.url().includes('/api/articles?'),
+      ),
+      action(),
+    ]);
+    const { articles } = await response.json();
+    if (articles.length > 0) {
+      await expect(this.firstArticleTitle).toHaveText(articles[0].title);
     }
+  }
 
-    const hasNextPage =
-      (await nextPageButton.isVisible()) && (await nextPageButton.isEnabled());
-    if (!hasNextPage) {
-      throw new Error(`Article "${title}" was not found on any of ${pageNumber} page(s)`);
+  // Find an article preview in the current list, moving through pagination pages
+  // until the article is found. Throws if the article is not on any page.
+  async find(title) {
+    const preview = new ArticlePreview(this.page, title);
+
+    for (let pageNumber = 1; ; pageNumber++) {
+      await this.firstArticleTitle.waitFor();
+
+      if (await preview.root.isVisible()) {
+        return preview;
+      }
+
+      const hasNextPage =
+        (await this.nextPageButton.isVisible()) && (await this.nextPageButton.isEnabled());
+      if (!hasNextPage) {
+        throw new Error(`Article "${title}" was not found on any of ${pageNumber} page(s)`);
+      }
+
+      await this.load(() => this.nextPageButton.click());
     }
-
-    await loadArticlesList(page, () => nextPageButton.click());
   }
 }

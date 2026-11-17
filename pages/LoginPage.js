@@ -4,11 +4,12 @@ export class LoginPage {
     this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.passwordInput = page.getByRole('textbox', { name: 'Password' });
     this.loginButton = page.getByRole('button', { name: 'Login' });
+    this.loginLink = page.getByRole('link', { name: 'Login' });
   }
 
   async open() {
-    await this.page.goto('https://realworld.qa.guru/');
-    await this.page.getByRole('link', { name: ' Login' }).click();
+    await this.page.goto('/');
+    await this.loginLink.click();
   }
 
   async login(email, password) {

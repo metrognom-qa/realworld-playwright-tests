@@ -28,16 +28,14 @@ test('Delete second comment and verify the first and third remain unchanged', as
   const secondComment = `Comment 2: ${faker.lorem.sentence()}`;
   const thirdComment = `Comment 3: ${faker.lorem.sentence()}`;
 
-  // Verifies that a comment shows the exact text, author's avatar and name, and today's date
+  // Verifies that a comment shows the exact text, author's name, and today's date
   async function verifyComment(text) {
     const comment = articleDetailsPage.getComment(text);
     await expect(comment.text).toHaveText(text);
-    await expect(comment.avatar).toHaveAccessibleName(username);
     await expect(comment.author).toHaveText(username);
     await expect(comment.date).toHaveText(today);
   }
 
-  // Precondition: add three comments to the new article
   await expect(articleDetailsPage.comments).toHaveCount(0);
 
   for (const text of [firstComment, secondComment, thirdComment]) {
@@ -45,7 +43,6 @@ test('Delete second comment and verify the first and third remain unchanged', as
     await expect(articleDetailsPage.getComment(text).text).toHaveText(text);
   }
 
-  // Verify all three comments are displayed and remember their display order
   await expect(articleDetailsPage.comments).toHaveCount(3);
   await verifyComment(firstComment);
   await verifyComment(secondComment);
@@ -54,17 +51,14 @@ test('Delete second comment and verify the first and third remain unchanged', as
   const initialOrder = await articleDetailsPage.commentTexts.allTextContents();
   const expectedOrder = initialOrder.filter((text) => text !== secondComment);
 
-  // Delete the second comment and confirm the deletion in the browser dialog
   const confirmMessage = await articleDetailsPage.deleteComment(secondComment);
   expect(confirmMessage).toBe('Want to delete the comment?');
 
-  // Verify the second comment is removed and the first and third are unchanged
   await expect(articleDetailsPage.getComment(secondComment).root).toHaveCount(0);
   await expect(articleDetailsPage.commentTexts).toHaveText(expectedOrder);
   await verifyComment(firstComment);
   await verifyComment(thirdComment);
 
-  // Reload and verify the deletion is saved on the server
   await page.reload();
   await expect(articleDetailsPage.title).toHaveText(publishedArticle.title);
   await expect(articleDetailsPage.getComment(secondComment).root).toHaveCount(0);

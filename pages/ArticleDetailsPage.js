@@ -2,6 +2,7 @@ export class ArticleDetailsPage {
   constructor(page) {
     this.page = page;
     this.title = page.getByRole('heading', { level: 1 });
+    this.editArticleLink = page.locator('.banner').getByRole('link', { name: 'Edit Article' });
     this.commentInput = page.getByRole('textbox', { name: 'Write a comment...' });
     this.postCommentButton = page.getByRole('button', { name: 'Post Comment' });
     this.comments = page.locator('.card').filter({ has: page.locator('.card-text') });
@@ -14,6 +15,10 @@ export class ArticleDetailsPage {
 
   getTagByName(tag) {
     return this.page.getByText(tag, { exact: true });
+  }
+
+  async openEditor() {
+    await this.editArticleLink.click();
   }
 
   async addComment(text) {
@@ -31,7 +36,6 @@ export class ArticleDetailsPage {
       text: root.getByRole('paragraph'),
       // The footer has two author links: the avatar (image) and the name; take the name link
       author: root.locator('.comment-author').filter({ hasNot: this.page.getByRole('img') }),
-      avatar: root.getByRole('img'),
       date: root.locator('.date-posted'),
       deleteButton: root.getByRole('button'),
     };

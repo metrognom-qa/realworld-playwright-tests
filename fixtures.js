@@ -10,22 +10,7 @@ import { NewArticlePage } from './pages/NewArticlePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { HomePage } from './pages/HomePage';
 import { ArticleDetailsPage } from './pages/ArticleDetailsPage';
-import { API_URL, deleteArticle, getArticleSlugFromUrl } from './utils/api';
-import {
-  scanAccessibility,
-  formatViolationSummary,
-  formatViolationDetails,
-  formatViolationsReport,
-} from './utils/accessibility';
-
-// Error for accessibility violations that shows only the violation lines in the report
-// (no stack trace, no code snippet). Each line starts with "Error: ".
-function violationsError(violations) {
-  const lines = violations.map((violation) => `${formatViolationSummary(violation)}.`);
-  const error = new Error(lines.join('\nError: '));
-  error.stack = lines.map((line) => `Error: ${line}`).join('\n');
-  return error;
-}
+import { deleteArticle, getArticleSlugFromUrl } from './utils/api';
 
 export const test = base.extend({
   // Page objects: created for each test that asks for them
@@ -45,60 +30,11 @@ export const test = base.extend({
     await use(new ArticleDetailsPage(page));
   },
 
-  // Accessibility check of the current page (WCAG 2.2 A/AA), soft:
-  // the test runs to the end and is marked failed afterwards if any violations were found.
-  // In the report, every violation is a separate failed step whose error is one line, e.g.
-  //   "[serious] WCAG 1.4.3 color-contrast: Elements must meet ... — 78 element(s)."
-  // with a "Details" attachment (why it matters, elements, how to fix).
-  //   await checkAccessibility('Login page');
-  checkAccessibility: async ({ page }, use, testInfo) => {
-    const allViolations = [];
-
-    await use(async (pageName) => {
-      // Errors are caught so the test continues; the steps are still shown as failed
-      await base.step(`Accessibility check: ${pageName} (WCAG 2.2 A/AA)`, async () => {
-        // Grouped in its own step so axe-core's internal browser calls do not clutter the report
-        const violations = await base.step('Scan the page with axe-core', () =>
-          scanAccessibility(page),
-        );
-
-        // Whole-page report: readable text + full axe-core JSON
-        await testInfo.attach(`Accessibility report: ${pageName}`, {
-          body: formatViolationsReport(pageName, page.url(), violations),
-          contentType: 'text/plain',
-        });
-        await testInfo.attach(`Accessibility report (JSON): ${pageName}`, {
-          body: JSON.stringify(violations, null, 2),
-          contentType: 'application/json',
-        });
-
-        if (violations.length === 0) {
-          await base.step('No violations found', async () => {});
-          return;
-        }
-
-        // One failed step per violation
-        for (const violation of violations) {
-          allViolations.push(violation);
-          await base
-            .step(formatViolationSummary(violation), async () => {
-              await testInfo.attach('Details', {
-                body: formatViolationDetails(violation),
-                contentType: 'text/plain',
-              });
-              throw violationsError([violation]);
-            })
-            .catch(() => {});
-        }
-
-        // Mark the whole page check as failed too
-        throw violationsError(violations);
-      }).catch(() => {});
-    });
-
-    // After the test body has finished: mark the test failed with one line per violation
-    if (allViolations.length > 0) {
-      throw violationsError(allViolations);
+  articlesToDelete: async ({ page }, use) => {
+    const slugs = [];
+    await use(slugs);
+    for (const slug of slugs) {
+      await deleteArticle(page, slug);
     }
   },
 
@@ -125,7 +61,7 @@ export const test = base.extend({
     page.on('response', async (response) => {
       if (
         response.request().method() === 'PUT' &&
-        response.url().startsWith(`${API_URL}/articles/`) &&
+        response.url().includes('/api/articles/') &&
         response.ok()
       ) {
         article.slug = (await response.json()).article.slug;

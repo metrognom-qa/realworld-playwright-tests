@@ -12,25 +12,20 @@ test('Like article in My Articles and verify it in Favorited Articles', async ({
   publishedArticle,
   profilePage,
 }) => {
-  // Go to profile and open My Articles
   await profilePage.open(process.env.TEST_USERNAME);
-  await profilePage.myArticlesTab.click();
+  await profilePage.openMyArticles();
 
-  // Verify the article is not liked yet
   const myArticlePreview = await profilePage.findArticlePreview(publishedArticle.title);
   await expect(myArticlePreview.favoriteButton).not.toHaveClass(/\bactive\b/);
   await expect(myArticlePreview.favoriteButton).toHaveText(/\(\s*0\s*\)/);
 
-  // Like the article and wait until the like is saved
   await myArticlePreview.favorite();
   await expect(myArticlePreview.favoriteButton).toHaveClass(/\bactive\b/);
   await expect(myArticlePreview.favoriteButton).toHaveText(/\(\s*1\s*\)/);
 
-  // Switch to the Favorited Articles tab
   await profilePage.openFavoritedArticles();
   await expect(page).toHaveURL(/\/favorites$/);
 
-  // Verify the article is listed in Favorited Articles and is still liked
   const favoritedArticlePreview = await profilePage.findArticlePreview(publishedArticle.title);
   await expect(favoritedArticlePreview.title).toHaveText(publishedArticle.title);
   await expect(favoritedArticlePreview.favoriteButton).toHaveClass(/\bactive\b/);

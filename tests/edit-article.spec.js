@@ -13,63 +13,33 @@ test('Edit article title and body and verify the changes persist', async ({
   publishedArticle: article,
   profilePage,
   articleDetailsPage,
+  newArticlePage,
 }) => {
 
-  // Go to profile and find article is in My Articles
   await profilePage.open(process.env.TEST_USERNAME);
-  await profilePage.myArticlesTab.click();
-  const createdArticleLink = await profilePage.getArticleByTitle(article.title);
-  await expect(createdArticleLink).toBeVisible();
-
-  // Open the created article
-  await createdArticleLink.click();
+  await profilePage.openMyArticles();
+  await profilePage.openArticle(article.title);
   await expect(articleDetailsPage.title).toHaveText(article.title);
 
-  // Prepare updated values based on the created article
 const editedArticle = {
   title: `${article.title} - Edited`,
   body: `${article.body} - Edited`,
 };
 
-// Open the article editor
-await page
-  .getByRole('link', { name: /Edit Article/ })
-  .nth(1)
-  .click();
+await articleDetailsPage.openEditor();
+await newArticlePage.editArticle(editedArticle);
 
-  // Update the title and body
-await page
-  .getByRole('textbox', { name: 'Article Title', exact: true })
-  .fill(editedArticle.title);
-
-await page
-  .getByRole('textbox', { name: 'Write your article (in' })
-  .fill(editedArticle.body);
-  // Save changes
-await page
-  .getByRole('button', { name: 'Update Article', exact: true })
-  .click();
-
-// Wait until the updated article is displayed
 await expect(articleDetailsPage.title).toHaveText(editedArticle.title);
 
-// Open the current user's profile through the navigation menu
 await profilePage.openFromNavigation(process.env.TEST_USERNAME);
 
-await profilePage.myArticlesTab.click();
+await profilePage.openMyArticles();
 
-// Find and open the article using its updated title
-const editedArticleLink = await profilePage.getArticleByTitle(
-  editedArticle.title
-);
-
-await expect(editedArticleLink).toBeVisible();
-await editedArticleLink.click();
+await profilePage.openArticle(editedArticle.title);
 
 // Verify the correct article opened before reloading
 await expect(articleDetailsPage.title).toHaveText(editedArticle.title);
 
-// Reload to verify that the edited values persist
 await page.reload();
 
 await expect(articleDetailsPage.title).toHaveText(editedArticle.title);

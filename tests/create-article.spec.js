@@ -8,6 +8,7 @@
 
 import { test, expect } from '../fixtures';
 import { faker } from '@faker-js/faker';
+import { getArticleSlugFromUrl } from '../utils/api';
 
 test('Create article and verify it in profile and Global Feed', async ({
   page,
@@ -16,16 +17,15 @@ test('Create article and verify it in profile and Global Feed', async ({
   profilePage,
   homePage,
   articleDetailsPage,
+  articlesToDelete,
 }) => {
 
-  // Login
   await loginPage.open();
   await loginPage.login(
   process.env.TEST_EMAIL,
   process.env.TEST_PASSWORD
 );
 
-  // Generate randomized article data using Faker for each test run
   const article = {
     title: `Test article ${faker.string.uuid()}`,
     description: faker.lorem.sentence(),
@@ -33,14 +33,12 @@ test('Create article and verify it in profile and Global Feed', async ({
     tag: faker.word.noun(),
   };
 
-  // Create article
   await newArticlePage.open();
   await newArticlePage.fillAndPublish(article);
 
-  // Verify article page opened
   await expect(page).toHaveURL(new RegExp('#/article/'));
-  // Verify article details immediately after publication
   await expect(articleDetailsPage.title).toHaveText(article.title);
+  articlesToDelete.push(getArticleSlugFromUrl(page));
 
   await expect(
     articleDetailsPage.getBodyByText(article.body)
@@ -50,36 +48,27 @@ test('Create article and verify it in profile and Global Feed', async ({
     articleDetailsPage.getTagByName(article.tag)
   ).toBeVisible();
 
-  // Go to profile and verify article is in My Articles
   await profilePage.open(process.env.TEST_USERNAME);
-  await profilePage.myArticlesTab.click();
+  await profilePage.openMyArticles();
 
-  // Verify each field of the My Articles preview exactly matches the data entered at creation
-  // (searches all pages of My Articles)
   const profileArticlePreview = await profilePage.findArticlePreview(article.title);
 
   await expect(profileArticlePreview.title).toHaveText(article.title);
   await expect(profileArticlePreview.description).toHaveText(article.description);
   await expect(profileArticlePreview.tags).toHaveText([article.tag]);
 
-  // Go to Home page
   await homePage.open();
 
-  // Open Global Feed
   await homePage.openGlobalFeed();
 
-  // Find the created article in Global Feed (searches all pages)
   const feedArticlePreview = await homePage.findArticlePreview(article.title);
 
-  // Verify each field of the Global Feed preview exactly matches the data entered at creation
   await expect(feedArticlePreview.title).toHaveText(article.title);
   await expect(feedArticlePreview.description).toHaveText(article.description);
   await expect(feedArticlePreview.tags).toHaveText([article.tag]);
 
-  // Open the created article from Global Feed
   await homePage.openArticle(article.title);
 
-  // Verify article details after opening it from Global Feed
   await expect(articleDetailsPage.title).toHaveText(article.title);
 
   await expect(
