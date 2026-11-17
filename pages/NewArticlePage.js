@@ -1,0 +1,32 @@
+export class NewArticlePage {
+  constructor(page) {
+    this.page = page;
+    this.titleInput = page.getByRole('textbox', { name: 'Article Title' });
+    this.descriptionInput = page.getByRole('textbox', { name: "What's this article about?" });
+    this.bodyInput = page.getByRole('textbox', { name: 'Write your article (in markdown)' });
+    this.tagsInput = page.getByRole('textbox', { name: 'Enter tags' });
+    this.publishButton = page.getByRole('button', { name: 'Publish Article' });
+    this.updateButton = page.getByRole('button', { name: 'Update Article', exact: true });
+    this.newArticleLink = page.getByRole('link', { name: 'New Article' });
+  }
+
+  async open() {
+    await this.newArticleLink.click();
+  }
+
+  async fillAndPublish({ title, description, body, tag }) {
+    await this.titleInput.fill(title);
+    await this.descriptionInput.fill(description);
+    await this.bodyInput.fill(body);
+    // Do not press Enter in the tags field: on this site Enter submits the whole form,
+    // which races with the Publish click. The typed tag is saved on Publish.
+    await this.tagsInput.fill(tag);
+    await this.publishButton.click();
+  }
+
+  async editArticle({ title, body }) {
+    await this.titleInput.fill(title);
+    await this.bodyInput.fill(body);
+    await this.updateButton.click();
+  }
+}
